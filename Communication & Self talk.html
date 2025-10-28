@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletics Mental Skills Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Palette: Deep Blue (#0A3D62) and Vibrant Gold/Orange (#FF8C00) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F4F8; /* Light gray-blue background */
+            color: #1F2937;
+        }
+        .quiz-container {
+            max-width: 800px;
+        }
+        .answer-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #D1D5DB;
+            min-height: 80px; /* Ensure cards have some minimal height */
+        }
+        .answer-card:hover:not(.selected) {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-color: #0A3D62;
+        }
+        .selected.correct {
+            background-color: #D1FAE5; /* Light Green */
+            border-color: #10B981; /* Green */
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.5);
+            pointer-events: none;
+        }
+        .selected.incorrect {
+            background-color: #FEE2E2; /* Light Red */
+            border-color: #EF4444; /* Red */
+            pointer-events: none;
+        }
+        .unselected {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .feedback-box {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="antialiased p-4 md:p-8">
+
+    <div class="quiz-container mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-10">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-extrabold text-[#0A3D62] border-b-4 border-[#FF8C00] pb-2 inline-block">The Expression Trainer</h1>
+            <p class="text-lg text-gray-600 mt-2">Level up your mental game: Communication and Self-Talk</p>
+        </header>
+
+        <div id="quiz-area">
+            <div id="question-counter" class="text-center text-sm font-semibold text-gray-500 mb-4">Question 1 of 12</div>
+            
+            <h2 id="question-text" class="text-2xl font-semibold text-gray-800 mb-6 leading-relaxed"></h2>
+
+            <div id="answer-options" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                <!-- Answer cards will be injected here -->
+            </div>
+
+            <div id="feedback-section" class="hidden feedback-box p-4 rounded-lg">
+                <h3 id="feedback-title" class="font-bold text-lg mb-2"></h3>
+                <p id="feedback-explanation"></p>
+            </div>
+
+            <div class="text-center mt-8">
+                <button id="next-question-btn" class="hidden px-8 py-3 bg-[#FF8C00] text-white font-bold rounded-lg shadow-lg hover:bg-[#CC7000] transition duration-300 disabled:opacity-50" disabled>
+                    Next Challenge
+                </button>
+                <div id="results" class="hidden text-2xl font-bold text-center mt-6 p-4 bg-gray-100 rounded-lg space-y-4">
+                    <!-- Results content and buttons injected here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Scenario 1: You're halfway through a tough interval set and feel exhausted. You need a break. What is the most functional phrase to express this need?",
+                answers: [
+                    { text: "Just stop and catch your breath without saying anything, hoping the coach notices.", isCorrect: false, explanation: "Stopping abruptly sends mixed signals and disrupts the flow. **Functional communication** is clear, controlled, and respectful of the coach's plan." },
+                    { text: "Say: 'Coach, I need a 30-second reset. I'll be back on the line for the next rep.'", isCorrect: true, explanation: "This is **functional and controlled self-expression**. It states a clear, time-bound need without making excuses, showing you manage your energy autonomously." },
+                    { text: "Say: 'This set is too hard! I can't keep going.'", isCorrect: false, explanation: "This phrase expresses frustration, not a plan. **Self-control** means replacing complaints with a clear, positive action plan." },
+                    { text: "Try to push through the fatigue, but slow down significantly, hoping no one notices.", isCorrect: false, explanation: "Slowing down without communication is passive. **Communication** ensures everyone is on the same page and helps you reset effectively." }
+                ]
+            },
+            {
+                question: "Scenario 2: It's the start of a final race, and you feel intense anxiety. What piece of self-talk is most effective right now?",
+                answers: [
+                    { text: "Tell yourself: 'Don't mess up the start. Don't look at the competitors.'", isCorrect: false, explanation: "Focusing on 'don't' emphasizes the mistake and increases anxiety. **Positive self-talk** should focus on desired action." },
+                    { text: "Say: 'I need to win this race for my coach and family.'", isCorrect: false, explanation: "This focuses on the external **outcome** and adds unnecessary pressure. Self-talk should focus on the **process** you control." },
+                    { text: "Say: 'I've trained for this moment. Focus on my first three strides and trust my speed.'", isCorrect: true, explanation: "This is **process-focused, positive self-talk**. It acknowledges preparation and directs your energy to a simple, actionable cue, managing anxiety successfully." },
+                    { text: "Remind yourself of all the hard workouts you did to get here.", isCorrect: false, explanation: "While positive, this is passive reflection. **Self-talk** is most effective when it's an active, forward-moving instruction." }
+                ]
+            },
+            {
+                question: "Scenario 3: You foul a critical throw or botch a long jump approach. You feel a burst of frustration. How should you express and manage this emotion?",
+                answers: [
+                    { text: "Scream briefly or throw your towel down to get the frustration out.", isCorrect: false, explanation: "External outbursts waste energy and focus. **Self-control** means acknowledging the emotion and containing it quickly." },
+                    { text: "Walk away, use one strong cue word (like 'Flush!'), and immediately focus on the next rep's purpose.", isCorrect: true, explanation: "This uses a controlled, **functional cue** to signal the emotional reset. It shows you can express the emotion by moving past it and returning to the task at hand." },
+                    { text: "Ignore the feeling completely and try to pretend you aren't frustrated.", isCorrect: false, explanation: "Suppressing emotion doesn't work; it often builds up. **Self-expression** is healthier when it's acknowledged and then intentionally redirected." },
+                    { text: "Immediately start analyzing the mistake in your mind before the coach can talk to you.", isCorrect: false, explanation: "Analysis needs to wait for the proper time. Immediately after an error, the focus must be on **emotional reset**." }
+                ]
+            },
+            {
+                question: "Scenario 4: You feel a sharp, unusual pain in your knee during a long run. What is the clearest way to communicate this need to stop to your coach?",
+                answers: [
+                    { text: "Keep running and try to minimize the pain, hoping it goes away on its own.", isCorrect: false, explanation: "This risks injury. **Self-advocacy** means prioritizing safety and communicating issues immediately, not pushing through sharp pain." },
+                    { text: "Stop and say: 'Coach, I think I pulled something. I'm going to take a break.'", isCorrect: false, explanation: "This uses speculation ('I think I pulled something'). **Clear communication** should be factual, focusing on the sensation and location, not a diagnosis." },
+                    { text: "Stop immediately and say, 'Coach, I have a sharp pain in my knee, and I need to stop running right now.'", isCorrect: true, explanation: "This is the ideal **clear, factual communication**. It states the location and the nature of the pain directly, allowing the coach to make an informed safety decision." },
+                    { text: "Run over to a teammate and explain the pain to them first.", isCorrect: false, explanation: "Communicate directly with the person who needs to know for your safety (the coach)." }
+                ]
+            },
+            {
+                question: "Scenario 5: Your coach explains a new, complex training drill, but you are confused about the footwork. How should you functionally ask for clarification?",
+                answers: [
+                    { text: "Just nod and pretend you understand to avoid looking slow in front of others.", isCorrect: false, explanation: "Pretending ensures you execute the drill incorrectly, which wastes everyone's time. **Self-advocacy** means asking when you need help." },
+                    { text: "Ask: 'Coach, can you walk me through that footwork again slowly? I want to make sure I execute it perfectly.'", isCorrect: true, explanation: "This is **functional questioning**. It frames the request around a positive goal (perfect execution), making the request specific and proactive." },
+                    { text: "Ask: 'I don't get it. Can someone else explain the drill to me?'", isCorrect: false, explanation: "This expresses frustration and asks someone else to do the coach's job. Keep your **communication** respectful and direct." },
+                    { text: "Wait for a teammate to ask the question, then listen to the answer.", isCorrect: false, explanation: "Waiting is passive. **Autonomy** means taking responsibility for your own understanding." }
+                ]
+            },
+            {
+                question: "Scenario 6: Mid-repetition, your legs start burning, and your mind tells you to stop. What is the best instructional self-talk to push through the discomfort?",
+                answers: [
+                    { text: "Yell out loud: 'Why is this so painful?'", isCorrect: false, explanation: "Asking a philosophical question mid-rep doesn't help execution. **Self-talk** needs to be an instruction." },
+                    { text: "Mentally use the phrase: 'Slow down a little, I deserve a break.'", isCorrect: false, explanation: "This is negative self-talk that gives yourself permission to fail the objective. **Discipline** is maintained through strong internal instruction." },
+                    { text: "Mentally use a process cue: 'Knees high. Drive forward. Fight for five more seconds.'", isCorrect: true, explanation: "This is highly effective **instructional self-talk**. It directs your focus to a physical cue, maintaining form and discipline until the finish." },
+                    { text: "Start counting how many steps are left until you can stop.", isCorrect: false, explanation: "Counting encourages distraction and focusing on the finish line rather than the quality of the current moment." }
+                ]
+            },
+            {
+                question: "Scenario 7: Your coach stops practice to give you sharp, critical feedback on a technical error you just made. How should you respond with self-control?",
+                answers: [
+                    { text: "Immediately argue back and defend why you did it that way.", isCorrect: false, explanation: "Defensiveness prevents learning. **Self-control** means listening and processing the technical information first." },
+                    { text: "Say: 'Got it. I hear the technical point. I will focus on that exact change in the next rep.'", isCorrect: true, explanation: "This is the **functional response**. It acknowledges the critique, separates the technical point from emotion, and commits to a specific future action." },
+                    { text: "Stare at the ground and nod silently, feeling embarrassed.", isCorrect: false, explanation: "Silent nodding is unclear. **Communication** requires active acknowledgment to ensure the message was received and understood." },
+                    { text: "Ask the coach to explain why the feedback was so harsh.", isCorrect: false, explanation: "Focusing on the *tone* (harshness) distracts from the *content* (the technique). Keep the conversation focused on performance." }
+                ]
+            },
+            {
+                question: "Scenario 8: Just before your event, a distraction (e.g., loud music, a commentator) breaks your focus. How do you use self-talk to restore your concentration?",
+                answers: [
+                    { text: "Yell at the distraction (the music or person) to be quiet.", isCorrect: false, explanation: "You can't control external factors. **Self-management** is about controlling your internal world." },
+                    { text: "Use a simple cue word and mentally repeat: 'My bubble. My space. I control my focus.'", isCorrect: true, explanation: "This is **self-management** through self-talk. It uses a strong, protective phrase to actively block the distraction and anchor your mind internally." },
+                    { text: "Wait for the distraction to pass, and only resume your routine when it's completely quiet.", isCorrect: false, explanation: "This gives the distraction control over your routine. **Resilience** means proceeding regardless of outside factors." },
+                    { text: "Try to visualize your best previous performance to regain confidence.", isCorrect: false, explanation: "Visualization might be too passive. You need an active self-talk command to block the noise and regain control." }
+                ]
+            },
+            {
+                question: "Scenario 9: You miss a new personal record (PR) by a tiny margin and feel crushing disappointment. What is the most constructive self-talk?",
+                answers: [
+                    { text: "Tell yourself: 'I'll never hit that goal if I keep making small mistakes.'", isCorrect: false, explanation: "This is catastrophizing. **Constructive self-talk** is forward-looking and based on facts, not hyperbole." },
+                    { text: "Say: 'That effort was solid. What is one technical thing I can adjust and try next time?'", isCorrect: true, explanation: "This is ideal **self-reflection**. It acknowledges the positive effort while immediately shifting focus from the crushing outcome to a clear, actionable **process goal**." },
+                    { text: "Tell yourself to forget it happened and immediately think about something else.", isCorrect: false, explanation: "You must first process the emotion and capture the learning. **Reflection** is crucial before moving on." },
+                    { text: "Complain to a teammate about how unfair the conditions were today.", isCorrect: false, explanation: "Blaming external factors avoids taking responsibility for self-improvement." }
+                ]
+            },
+            {
+                question: "Scenario 10: Your relay team is struggling with handoffs because everyone is quiet. What is the most assertive and constructive communication to the team?",
+                answers: [
+                    { text: "Say: 'We are messing this up! We all need to communicate better.'", isCorrect: false, explanation: "This is vague and focuses on the problem ('messing up'). **Constructive communication** is specific and solution-oriented." },
+                    { text: "Say: 'Let's all state one specific thing we'll commit to on the exchange. I'll focus on my mark.'", isCorrect: true, explanation: "This is **assertive and collaborative**. It requests specific, actionable commitment from everyone, making the communication functional and effective." },
+                    { text: "Ask: 'Is anyone else nervous about the handoffs? I know I am.'", isCorrect: false, explanation: "This focuses on shared anxiety, not the mechanical fix. **Team communication** must drive action." },
+                    { text: "Wait for the coach to interrupt and solve the problem for the team.", isCorrect: false, explanation: "This relies on external authority. **Autonomy** means team members take ownership of their own communication issues." }
+                ]
+            },
+            {
+                question: "Scenario 11: You are feeling unmotivated before a scheduled hard workout. What internal phrase best affirms your commitment and gets you moving?",
+                answers: [
+                    { text: "Mentally argue: 'I don't feel like training, but I have to do it.'", isCorrect: false, explanation: "Focusing on the negative (not feeling like it) drains energy. **Affirmation** must be positive and strong." },
+                    { text: "Mentally use the phrase: 'I choose to be here. This hard work is how I get stronger.'", isCorrect: true, explanation: "This is a powerful **affirmation of commitment**. It asserts control (I choose) and links the current discomfort to the long-term, positive goal (getting stronger)." },
+                    { text: "Think about the last time you missed a workout and felt guilty.", isCorrect: false, explanation: "Guilt is negative motivation. **Positive self-talk** uses goals and commitment, not fear of failure." },
+                    { text: "Only do the warm-up, and see if you feel like training after that.", isCorrect: false, explanation: "This compromises the session before it starts. **Commitment** is about showing up and starting with full intent." }
+                ]
+            },
+            {
+                question: "Scenario 12: Your coach adds an extra 30-minute session at the end of a very hard week, but you know you need recovery. How do you respectfully express your boundary?",
+                answers: [
+                    { text: "Skip the extra session and avoid the coach on the way out.", isCorrect: false, explanation: "Skipping without communication is disrespectful and passive. **Assertiveness** requires clear communication." },
+                    { text: "Say: 'Coach, I appreciate the opportunity, but I need to stick to my planned recovery today for long-term health and injury prevention.'", isCorrect: true, explanation: "This is ideal **self-advocacy**. It respects the coach's effort while firmly and functionally asserting your recovery needs as a long-term performance strategy." },
+                    { text: "Do the extra session but complain about it under your breath the whole time.", isCorrect: false, explanation: "Complaining poisons your mental state. If you do the session, do it with full commitment; if you need recovery, communicate it clearly." },
+                    { text: "Ask a senior athlete to talk to the coach about your recovery needs.", isCorrect: false, explanation: "This outsources your responsibility. **Self-expression** means speaking up for your own needs." }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizCompleted = false;
+        let sessionAttempts = []; // New array to store detailed attempt results
+
+        const questionText = document.getElementById('question-text');
+        const answerOptions = document.getElementById('answer-options');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const feedbackSection = document.getElementById('feedback-section');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const questionCounter = document.getElementById('question-counter');
+        const resultsDiv = document.getElementById('results');
+
+        // --- UTF-8 Safe Encoding/Decoding for btoa/atob ---
+        // Encodes a Unicode string into a Base64 string that can be safely placed in HTML attributes.
+        const b64EncodeUnicode = (str) => btoa(
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+                (match, p1) => String.fromCharCode('0x' + p1)
+            )
+        );
+
+        // Decodes a Base64 string back into a Unicode string.
+        const b64DecodeUnicode = (str) => decodeURIComponent(
+            atob(str).split('').map((c) => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join('')
+        );
+        // --- End UTF-8 Safe Encoding/Decoding ---
+
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+                return;
+            }
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Shuffle the answers before rendering them
+            shuffleArray(currentQuestion.answers);
+            
+            // Reset interface elements that may have been hidden by showResults or reset
+            answerOptions.innerHTML = '';
+            feedbackSection.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            nextQuestionBtn.disabled = true;
+            resultsDiv.classList.add('hidden');
+
+            questionText.classList.remove('hidden');
+            answerOptions.classList.remove('hidden');
+            questionCounter.classList.remove('hidden');
+
+            // Update question and counter
+            questionText.textContent = currentQuestion.question;
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+
+            // Render answers
+            currentQuestion.answers.forEach((answer, index) => {
+                const card = document.createElement('div');
+                card.classList.add('answer-card', 'p-4', 'rounded-lg', 'bg-white', 'shadow-md', 'flex', 'items-center', 'text-base', 'font-medium');
+                card.dataset.index = index;
+                // Use letters A, B, C, D for the four options
+                card.innerHTML = `<span class="mr-3 font-bold text-[#FF8C00]">${String.fromCharCode(65 + index)}.</span> ${answer.text}`;
+                card.addEventListener('click', () => checkAnswer(card, answer));
+                answerOptions.appendChild(card);
+            });
+        }
+
+        function checkAnswer(selectedCard, selectedAnswer) {
+            if (quizCompleted) return;
+
+            const allAnswerCards = answerOptions.querySelectorAll('.answer-card');
+            
+            // Disable all cards and dim unselected ones
+            allAnswerCards.forEach(card => {
+                card.classList.add('unselected');
+                card.removeEventListener('click', checkAnswer);
+            });
+            
+            selectedCard.classList.remove('unselected');
+            selectedCard.classList.add('selected');
+
+            // Find the correct answer object for logging, regardless of user choice
+            const currentQuestionData = quizData[currentQuestionIndex];
+            const correctAnswerObject = currentQuestionData.answers.find(a => a.isCorrect);
+
+            // Store attempt data
+            const attemptData = {
+                question: currentQuestionData.question,
+                selectedText: selectedAnswer.text,
+                isCorrect: selectedAnswer.isCorrect,
+                correctAnswerText: correctAnswerObject.text,
+                correctExplanation: correctAnswerObject.explanation
+            };
+            sessionAttempts.push(attemptData);
+
+
+            // Set feedback based on correctness
+            if (selectedAnswer.isCorrect) {
+                score++;
+                selectedCard.classList.add('correct');
+                feedbackTitle.textContent = "Awesome choice! That's the mindset of a champion.";
+                feedbackTitle.classList.remove('text-red-700');
+                feedbackTitle.classList.add('text-green-700');
+                feedbackSection.classList.remove('bg-red-100');
+                feedbackSection.classList.add('bg-green-100');
+            } else {
+                selectedCard.classList.add('incorrect');
+                feedbackTitle.textContent = "Good try, but let's sharpen that focus.";
+                feedbackTitle.classList.remove('text-green-700');
+                feedbackTitle.classList.add('text-red-700');
+                feedbackSection.classList.remove('bg-green-100');
+                feedbackSection.classList.add('bg-red-100');
+                
+                // Highlight the correct answer
+                const correctCard = Array.from(allAnswerCards).find(card => {
+                    // Find the card whose content includes the correct answer text
+                    return card.textContent.includes(correctAnswerObject.text);
+                });
+                
+                if (correctCard) {
+                    correctCard.classList.remove('unselected');
+                    correctCard.classList.add('selected', 'correct');
+                }
+            }
+
+            feedbackExplanation.textContent = selectedAnswer.explanation;
+            feedbackSection.classList.remove('hidden');
+            
+            // Update the text for the next button if it's the last question
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextQuestionBtn.textContent = "See Results";
+            } else {
+                nextQuestionBtn.textContent = "Next Challenge";
+            }
+
+            nextQuestionBtn.classList.remove('hidden');
+            nextQuestionBtn.disabled = false;
+        }
+
+        function getResultMessage(score, totalQuestions) {
+            if (score === totalQuestions) {
+                return {
+                    title: `PERFECT SCORE! 🥇 ${score}/${totalQuestions}`,
+                    text: `You are an elite athlete with amazing mental skills. Your **Communication** and **Self-Expression** are top-tier. You advocate for yourself and use your internal voice to maximize performance!`,
+                    color: 'text-green-700'
+                };
+            } else if (score >= totalQuestions * 0.75) {
+                return {
+                    title: `GREAT JOB! 🎉 ${score}/${totalQuestions}`,
+                    text: `Excellent understanding of **Functional Communication**. You know how to express your needs and use positive self-talk. Keep practicing those assertive phrases to perfect your mental game.`,
+                    color: 'text-blue-700'
+                };
+            } else {
+                return {
+                    title: `GOOD EFFORT! 👍 ${score}/${totalQuestions}`,
+                    text: `This quiz shows we have a great opportunity to improve your **Self-Expression**. Focus on replacing negative talk with clear, instructional phrases and using your voice to communicate needs assertively.`,
+                    color: 'text-orange-700'
+                };
+            }
+        }
+
+        function showResults() {
+            quizCompleted = true;
+            questionText.classList.add('hidden');
+            answerOptions.classList.add('hidden');
+            feedbackSection.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            questionCounter.classList.add('hidden');
+            
+            const totalQuestions = quizData.length;
+            const result = getResultMessage(score, totalQuestions);
+
+            // --- Start Detailed Summary Generation ---
+            let detailedSummaryHTML = '';
+            let detailedSummaryText = ''; // For the copy function
+
+            sessionAttempts.forEach((attempt, index) => {
+                const statusIcon = attempt.isCorrect ? '✅' : '❌';
+                const statusColor = attempt.isCorrect ? 'text-green-600' : 'text-red-600';
+                const questionLetter = String.fromCharCode(65 + index);
+
+                detailedSummaryHTML += `
+                    <div class="border-t border-gray-300 pt-4 mt-4 text-left">
+                        <p class="text-lg font-bold ${statusColor}">${statusIcon} Question ${index + 1}: ${attempt.question}</p>
+                        <p class="mt-1 text-sm text-gray-700"><span class="font-semibold">Your Choice:</span> ${attempt.selectedText}</p>
+                        <p class="mt-1 text-sm ${statusColor} font-semibold"><span class="text-gray-900">Correct Answer:</span> ${attempt.correctAnswerText}</p>
+                        <p class="mt-2 text-sm text-gray-700">***Explanation: ${attempt.correctExplanation}</p>
+                    </div>
+                `;
+                
+                detailedSummaryText += `
+--- Question ${index + 1} ---
+Q: ${attempt.question}
+Your Choice (${statusIcon}): ${attempt.selectedText}
+Correct Answer: ${attempt.correctAnswerText}
+Explanation: ${attempt.correctExplanation}
+`;
+            });
+            // --- End Detailed Summary Generation ---
+
+            const resultsHTML = `
+                <div class="${result.color} text-4xl font-extrabold mb-2">${result.title}</div>
+                <div class="text-xl font-medium text-gray-800 mb-6">${result.text}</div>
+                
+                <div id="detailed-results-container" class="max-h-96 overflow-y-auto p-4 border rounded-lg bg-white shadow-inner">
+                    <h4 class="text-xl font-bold text-[#0A3D62] mb-3 border-b pb-2">Full Test Review</h4>
+                    ${detailedSummaryHTML}
+                </div>
+
+                <div class="space-x-4 pt-4">
+                    <button id="copy-results-btn" class="px-6 py-3 bg-[#0A3D62] text-white font-bold rounded-lg shadow-md hover:bg-[#082C4A] transition duration-300" data-summary="${b64EncodeUnicode(detailedSummaryText)}">
+                        Copy Results
+                    </button>
+                    <button id="reset-test-btn" class="px-6 py-3 border-2 border-[#FF8C00] text-[#FF8C00] font-bold rounded-lg shadow-md hover:bg-yellow-50 transition duration-300">
+                        Reset Test
+                    </button>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = resultsHTML;
+            resultsDiv.classList.remove('hidden');
+
+            document.getElementById('copy-results-btn').addEventListener('click', copyResults);
+            document.getElementById('reset-test-btn').addEventListener('click', resetQuiz);
+        }
+
+        function copyResults() {
+            const totalQuestions = quizData.length;
+            const result = getResultMessage(score, totalQuestions);
+            // Decode the detailed summary text using the new safe function
+            const detailedSummaryText = b64DecodeUnicode(document.getElementById('copy-results-btn').dataset.summary); 
+
+            const copyText = `
+--- Athletics Mental Skills Quiz Results ---
+Athlete: [Client Name, Date]
+Score: ${score} out of ${totalQuestions}
+Summary: ${result.title.split(' ')[0]}!
+Mental State Feedback: ${result.text}
+
+==================================================
+        
+FULL QUESTION-BY-QUESTION REVIEW
+${detailedSummaryText}
+--- End of Test ---
+`;
+            // Use document.execCommand('copy') for better compatibility in iFrames
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = copyText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            
+            // Provide visual confirmation (non-alert version)
+            const copyBtn = document.getElementById('copy-results-btn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizCompleted = false;
+            sessionAttempts = []; // Critical: Clear the stored attempts
+            
+            // Re-show main quiz containers and hide results
+            questionText.classList.remove('hidden');
+            answerOptions.classList.remove('hidden');
+            questionCounter.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            
+            renderQuestion();
+        }
+
+        // Event listener for Next button
+        nextQuestionBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            renderQuestion();
+        });
+
+        // Initialize quiz
+        document.addEventListener('DOMContentLoaded', renderQuestion);
+    </script>
+
+</body>
+</html>
